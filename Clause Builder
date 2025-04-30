@@ -1,0 +1,105 @@
+// ClauseBuilder.jsx - Complete implementation
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { 
+  Download, Copy, Save, Info, AlertCircle, ArrowRight, ArrowLeft, Check 
+} from 'lucide-react';
+
+const ClauseBuilder = () => {
+  const navigate = useNavigate();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [formData, setFormData] = useState({
+    clauseType: 'arbitration',
+    partyANationality: '',
+    partyBNationality: '',
+    subjectMatterLocation: '',
+    enforcementLocations: '',
+    seatOfArbitration: '',
+    governingLaw: '',
+    language: 'English',
+    arbitratorCount: '3',
+    institution: ''
+  });
+  
+  const [suggestedInstitutions, setSuggestedInstitutions] = useState([]);
+  const [generatedClauses, setGeneratedClauses] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [error, setError] = useState('');
+  
+  // Step information
+  const steps = [
+    { id: 1, name: 'Clause Type' },
+    { id: 2, name: 'Party Information' },
+    { id: 3, name: 'Dispute Details' },
+    { id: 4, name: 'Results' }
+  ];
+
+  useEffect(() => {
+    // Only fetch institution suggestions when we have the necessary data
+    if (formData.partyANationality && 
+        formData.partyBNationality && 
+        formData.subjectMatterLocation && 
+        formData.enforcementLocations) {
+      
+      fetchSuggestedInstitutions();
+    }
+  }, [formData.partyANationality, formData.partyBNationality, 
+      formData.subjectMatterLocation, formData.enforcementLocations]);
+
+  const fetchSuggestedInstitutions = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/institutions/suggest', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          partyANationality: formData.partyANationality,
+          partyBNationality: formData.partyBNationality,
+          subjectMatterLocation: formData.subjectMatterLocation,
+          enforcementLocations: formData.enforcementLocations
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch suggested institutions');
+      }
+      
+      const data = await response.json();
+      setSuggestedInstitutions(data.institutions);
+      
+      // Auto-select the first suggestion
+      if (data.institutions && data.institutions.length > 0) {
+        setFormData(prev => ({
+          ...prev,
+          institution: data.institutions[0].id,
+          seatOfArbitration: data.institutions[0].recommendedSeat
+        }));
+      }
+      setError('');
+    } catch (error) {
+      console.error('Error fetching suggested institutions:', error);
+      setError('Failed to load institution suggestions. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleNextStep = () => {
+    // Validate current step before proceeding
+    if (currentStep === 1 && !formData.clauseType) {
+      setError('Please select a clause type to continue');
+      return;
+    }
+    
+    if (currentStep === 2 && (!formData.partyANationality || !formData.partyBNationality
