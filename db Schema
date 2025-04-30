@@ -1,0 +1,146 @@
+// User.js
+const mongoose = require('mongoose');
+
+const userSchema = new mongoose.Schema({
+  email: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  password: {
+    type: String,
+    required: true
+  },
+  name: {
+    type: String,
+    required: true
+  },
+  savedClauses: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Clause'
+  }],
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+module.exports = mongoose.model('User', userSchema);
+
+// Clause.js
+const mongoose = require('mongoose');
+
+const clauseSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true
+  },
+  text: {
+    type: String,
+    required: true
+  },
+  type: {
+    type: String,
+    enum: ['arbitration', 'mediation', 'multi-tiered'],
+    required: true
+  },
+  institutionId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Institution',
+    required: true
+  },
+  tags: [{
+    type: String
+  }],
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+module.exports = mongoose.model('Clause', clauseSchema);
+
+// Institution.js
+const mongoose = require('mongoose');
+
+const institutionSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true
+  },
+  country: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Country',
+    required: true
+  },
+  region: {
+    type: String,
+    enum: ['Africa', 'Asia', 'Europe', 'Middle East', 'North America', 'Oceania', 'South America'],
+    required: true
+  },
+  officeLocations: [{
+    type: String
+  }],
+  recommendedSeats: [{
+    type: String
+  }],
+  reputationScore: {
+    type: Number,
+    default: 0
+  },
+  website: String,
+  description: String
+});
+
+module.exports = mongoose.model('Institution', institutionSchema);
+
+// Country.js
+const mongoose = require('mongoose');
+
+const countrySchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true
+  },
+  code: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  capital: String,
+  region: {
+    type: String,
+    enum: ['Africa', 'Asia', 'Europe', 'Middle East', 'North America', 'Oceania', 'South America']
+  },
+  nyConvention:
+// Country.js (continued)
+const mongoose = require('mongoose');
+
+const countrySchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true
+  },
+  code: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  capital: String,
+  region: {
+    type: String,
+    enum: ['Africa', 'Asia', 'Europe', 'Middle East', 'North America', 'Oceania', 'South America']
+  },
+  nyConvention: {
+    type: Boolean,
+    default: false
+  },
+  enforcementScore: {
+    type: Number,
+    min: 0,
+    max: 10,
+    default: 5
+  }
+});
+
+module.exports = mongoose.model('Country', countrySchema);
