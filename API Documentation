@@ -1,0 +1,336 @@
+# DraftResolve API Documentation
+
+This document outlines the API endpoints available in DraftResolve for generating and managing dispute resolution clauses.
+
+## Base URL
+
+```
+https://api.draftresolve.com/api
+```
+
+## Authentication
+
+Most endpoints require authentication via a JWT token. Include the token in the Authorization header:
+
+```
+Authorization: Bearer <your_jwt_token>
+```
+
+To obtain a token, use the login or signup endpoints.
+
+## Endpoints
+
+### Authentication
+
+#### Sign Up
+
+Create a new user account.
+
+- **URL**: `/auth/signup`
+- **Method**: `POST`
+- **Auth Required**: No
+- **Body**:
+  ```json
+  {
+    "email": "user@example.com",
+    "password": "password123",
+    "name": "John Doe"
+  }
+  ```
+- **Success Response**:
+  - **Code**: 201 Created
+  - **Content**:
+    ```json
+    {
+      "message": "User created successfully",
+      "token": "jwt_token_here",
+      "user": {
+        "id": "user_id",
+        "email": "user@example.com",
+        "name": "John Doe"
+      }
+    }
+    ```
+- **Error Response**:
+  - **Code**: 400 Bad Request
+    ```json
+    {
+      "errors": [
+        {
+          "msg": "Valid email required",
+          "param": "email",
+          "location": "body"
+        }
+      ]
+    }
+    ```
+  - **Code**: 409 Conflict
+    ```json
+    {
+      "message": "User already exists"
+    }
+    ```
+
+#### Login
+
+Log in to an existing user account.
+
+- **URL**: `/auth/login`
+- **Method**: `POST`
+- **Auth Required**: No
+- **Body**:
+  ```json
+  {
+    "email": "user@example.com",
+    "password": "password123"
+  }
+  ```
+- **Success Response**:
+  - **Code**: 200 OK
+  - **Content**:
+    ```json
+    {
+      "token": "jwt_token_here",
+      "user": {
+        "id": "user_id",
+        "email": "user@example.com",
+        "name": "John Doe"
+      }
+    }
+    ```
+- **Error Response**:
+  - **Code**: 401 Unauthorized
+    ```json
+    {
+      "message": "Invalid credentials"
+    }
+    ```
+
+### Institutions
+
+#### Suggest Institutions
+
+Get institution suggestions based on party nationalities and enforcement locations.
+
+- **URL**: `/institutions/suggest`
+- **Method**: `POST`
+- **Auth Required**: No
+- **Body**:
+  ```json
+  {
+    "partyANationality": "US",
+    "partyBNationality": "CN",
+    "subjectMatterLocation": "SG",
+    "enforcementLocations": "UK"
+  }
+  ```
+- **Success Response**:
+  - **Code**: 200 OK
+  - **Content**:
+    ```json
+    {
+      "institutions": [
+        {
+          "id": "institution_id",
+          "name": "Singapore International Arbitration Centre",
+          "country": "Singapore",
+          "recommendedSeat": "Singapore",
+          "reputationScore": 9.5
+        },
+        {
+          "id": "institution_id",
+          "name": "International Chamber of Commerce",
+          "country": "France",
+          "recommendedSeat": "Paris",
+          "reputationScore": 9.2
+        }
+      ]
+    }
+    ```
+- **Error Response**:
+  - **Code**: 400 Bad Request
+    ```json
+    {
+      "message": "Invalid country code(s)"
+    }
+    ```
+
+### Clauses
+
+#### Generate Clauses
+
+Generate customized dispute resolution clauses based on user inputs.
+
+- **URL**: `/clauses/generate`
+- **Method**: `POST`
+- **Auth Required**: No
+- **Body**:
+  ```json
+  {
+    "clauseType": "arbitration",
+    "partyANationality": "US",
+    "partyBNationality": "CN",
+    "subjectMatterLocation": "SG",
+    "enforcementLocations": "UK",
+    "seatOfArbitration": "Singapore",
+    "governingLaw": "English",
+    "language": "English",
+    "arbitratorCount": "3",
+    "institution": "institution_id"
+  }
+  ```
+- **Success Response**:
+  - **Code**: 200 OK
+  - **Content**:
+    ```json
+    {
+      "clauses": [
+        {
+          "id": "clause_id",
+          "text": "Any dispute arising out of or in connection with this contract, including any question regarding its existence, validity or termination, shall be referred to and finally resolved by arbitration administered by the Singapore International Arbitration Centre (SIAC) in accordance with the Arbitration Rules of the Singapore International Arbitration Centre (SIAC Rules) for the time being in force, which rules are deemed to be incorporated by reference in this clause. The seat of the arbitration shall be Singapore. The Tribunal shall consist of 3 arbitrator(s). The language of the arbitration shall be English. The governing law of this contract shall be the substantive law of England.",
+          "institution": "Singapore International Arbitration Centre",
+          "type": "arbitration",
+          "tags": ["international", "commercial"]
+        }
+      ]
+    }
+    ```
+- **Error Response**:
+  - **Code**: 400 Bad Request
+    ```json
+    {
+      "message": "Invalid institution"
+    }
+    ```
+  - **Code**: 404 Not Found
+    ```json
+    {
+      "message": "No matching clauses found"
+    }
+    ```
+
+#### Download Clause
+
+Download a clause in DOCX or PDF format.
+
+- **URL**: `/clauses/:id/download`
+- **Method**: `GET`
+- **Auth Required**: No
+- **URL Parameters**:
+  - `id`: Clause ID
+- **Query Parameters**:
+  - `format`: `docx` or `pdf`
+- **Success Response**:
+  - **Code**: 200 OK
+  - **Content**: Binary file (DOCX or PDF)
+- **Error Response**:
+  - **Code**: 400 Bad Request
+    ```json
+    {
+      "message": "Invalid format. Use docx or pdf."
+    }
+    ```
+  - **Code**: 404 Not Found
+    ```json
+    {
+      "message": "Clause not found"
+    }
+    ```
+
+#### Save Clause
+
+Save a clause to the user's library.
+
+- **URL**: `/clauses/:id/save`
+- **Method**: `POST`
+- **Auth Required**: Yes
+- **URL Parameters**:
+  - `id`: Clause ID
+- **Success Response**:
+  - **Code**: 200 OK
+  - **Content**:
+    ```json
+    {
+      "message": "Clause saved successfully"
+    }
+    ```
+- **Error Response**:
+  - **Code**: 404 Not Found
+    ```json
+    {
+      "message": "Clause not found"
+    }
+    ```
+
+#### Get Clause Library
+
+Get a list of clauses from the library, optionally filtered by institution, region, or type.
+
+- **URL**: `/clauses/library`
+- **Method**: `GET`
+- **Auth Required**: No
+- **Query Parameters**:
+  - `institution`: (optional) Institution ID
+  - `region`: (optional) Region name (e.g., "Asia", "Europe")
+  - `type`: (optional) Clause type (e.g., "arbitration", "mediation", "multi-tiered")
+- **Success Response**:
+  - **Code**: 200 OK
+  - **Content**:
+    ```json
+    {
+      "clauses": [
+        {
+          "id": "clause_id",
+          "title": "SIAC Model Arbitration Clause",
+          "text": "Any dispute arising out of or in connection with this contract, including any question regarding its existence, validity or termination, shall be referred to and finally resolved by arbitration administered by the Singapore International Arbitration Centre (SIAC) in accordance with the Arbitration Rules of the Singapore International Arbitration Centre (SIAC Rules) for the time being in force, which rules are deemed to be incorporated by reference in this clause. The seat of the arbitration shall be [SEAT]. The Tribunal shall consist of [ARBITRATOR_COUNT] arbitrator(s). The language of the arbitration shall be [LANGUAGE]. The governing law of this contract shall be the substantive law of [GOVERNING_LAW].",
+          "institution": "Singapore International Arbitration Centre",
+          "type": "arbitration",
+          "tags": ["international", "commercial"]
+        }
+      ]
+    }
+    ```
+
+### User
+
+#### Get User's Saved Clauses
+
+Get a list of clauses saved by the authenticated user.
+
+- **URL**: `/user/clauses`
+- **Method**: `GET`
+- **Auth Required**: Yes
+- **Success Response**:
+  - **Code**: 200 OK
+  - **Content**:
+    ```json
+    {
+      "clauses": [
+        {
+          "id": "clause_id",
+          "title": "SIAC Model Arbitration Clause",
+          "text": "Any dispute arising out of or in connection with this contract, including any question regarding its existence, validity or termination, shall be referred to and finally resolved by arbitration administered by the Singapore International Arbitration Centre (SIAC) in accordance with the Arbitration Rules of the Singapore International Arbitration Centre (SIAC Rules) for the time being in force, which rules are deemed to be incorporated by reference in this clause. The seat of the arbitration shall be Singapore. The Tribunal shall consist of 3 arbitrator(s). The language of the arbitration shall be English. The governing law of this contract shall be the substantive law of England.",
+          "institution": "Singapore International Arbitration Centre",
+          "type": "arbitration",
+          "tags": ["international", "commercial"],
+          "savedAt": "2025-04-30T12:34:56.789Z"
+        }
+      ]
+    }
+    ```
+- **Error Response**:
+  - **Code**: 401 Unauthorized
+    ```json
+    {
+      "message": "Authentication required"
+    }
+    ```
+
+## Error Codes
+
+- `400`: Bad Request - The request was malformed or contained invalid parameters
+- `401`: Unauthorized - Authentication is required or has failed
+- `403`: Forbidden - The authenticated user doesn't have permission to access the requested resource
+- `404`: Not Found - The requested resource was not found
+- `409`: Conflict - The request conflicts with the current state of the server
+- `500`: Internal Server Error - Something went wrong on the server
