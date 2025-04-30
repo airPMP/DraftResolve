@@ -1,0 +1,278 @@
+// Sample seed data for DraftResolve application
+
+// seed.js
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
+const User = require('./models/User');
+const Clause = require('./models/Clause');
+const Institution = require('./models/Institution');
+const Country = require('./models/Country');
+
+// Connect to database
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('MongoDB connected'))
+  .catch(err => console.error('MongoDB connection error:', err));
+
+// Seed data function
+const seedDatabase = async () => {
+  try {
+    // Clear existing data
+    await User.deleteMany({});
+    await Clause.deleteMany({});
+    await Institution.deleteMany({});
+    await Country.deleteMany({});
+
+    // Create countries
+    console.log('Adding countries...');
+    const countries = await Country.insertMany([
+      {
+        name: 'United States',
+        code: 'US',
+        capital: 'Washington D.C.',
+        region: 'North America',
+        nyConvention: true,
+        enforcementScore: 8
+      },
+      {
+        name: 'United Kingdom',
+        code: 'UK',
+        capital: 'London',
+        region: 'Europe',
+        nyConvention: true,
+        enforcementScore: 9
+      },
+      {
+        name: 'France',
+        code: 'FR',
+        capital: 'Paris',
+        region: 'Europe',
+        nyConvention: true,
+        enforcementScore: 8
+      },
+      {
+        name: 'Switzerland',
+        code: 'CH',
+        capital: 'Bern',
+        region: 'Europe',
+        nyConvention: true,
+        enforcementScore: 10
+      },
+      {
+        name: 'Singapore',
+        code: 'SG',
+        capital: 'Singapore',
+        region: 'Asia',
+        nyConvention: true,
+        enforcementScore: 9
+      },
+      {
+        name: 'Hong Kong',
+        code: 'HK',
+        capital: 'Hong Kong',
+        region: 'Asia',
+        nyConvention: true,
+        enforcementScore: 8
+      },
+      {
+        name: 'China',
+        code: 'CN',
+        capital: 'Beijing',
+        region: 'Asia',
+        nyConvention: true,
+        enforcementScore: 6
+      },
+      {
+        name: 'Germany',
+        code: 'DE',
+        capital: 'Berlin',
+        region: 'Europe',
+        nyConvention: true,
+        enforcementScore: 9
+      },
+      {
+        name: 'Japan',
+        code: 'JP',
+        capital: 'Tokyo',
+        region: 'Asia',
+        nyConvention: true,
+        enforcementScore: 8
+      },
+      {
+        name: 'Sweden',
+        code: 'SE',
+        capital: 'Stockholm',
+        region: 'Europe',
+        nyConvention: true,
+        enforcementScore: 9
+      }
+    ]);
+
+    // Create institutions
+    console.log('Adding institutions...');
+    const institutions = await Institution.insertMany([
+      {
+        name: 'International Chamber of Commerce (ICC)',
+        country: countries.find(c => c.code === 'FR')._id,
+        region: 'Europe',
+        officeLocations: ['FR', 'US', 'SG', 'HK', 'UK'],
+        recommendedSeats: ['Paris', 'Geneva', 'London', 'Singapore', 'Hong Kong'],
+        reputationScore: 9.8,
+        website: 'https://iccwbo.org',
+        description: 'One of the world\'s leading arbitration institutions with a global reach and a strong reputation for handling complex international disputes.'
+      },
+      {
+        name: 'London Court of International Arbitration (LCIA)',
+        country: countries.find(c => c.code === 'UK')._id,
+        region: 'Europe',
+        officeLocations: ['UK'],
+        recommendedSeats: ['London', 'Paris', 'Geneva', 'Singapore'],
+        reputationScore: 9.5,
+        website: 'https://www.lcia.org',
+        description: 'One of the world\'s leading international institutions for commercial dispute resolution, administering arbitrations regardless of location and under any system of law.'
+      },
+      {
+        name: 'Singapore International Arbitration Centre (SIAC)',
+        country: countries.find(c => c.code === 'SG')._id,
+        region: 'Asia',
+        officeLocations: ['SG', 'IN'],
+        recommendedSeats: ['Singapore', 'London', 'Hong Kong'],
+        reputationScore: 9.6,
+        website: 'https://www.siac.org.sg',
+        description: 'A leading arbitration institution in Asia, providing efficient case management services to parties from all over the world.'
+      },
+      {
+        name: 'Hong Kong International Arbitration Centre (HKIAC)',
+        country: countries.find(c => c.code === 'HK')._id,
+        region: 'Asia',
+        officeLocations: ['HK'],
+        recommendedSeats: ['Hong Kong', 'Singapore', 'London'],
+        reputationScore: 9.3,
+        website: 'https://www.hkiac.org',
+        description: 'One of the world\'s most experienced and respected arbitral institutions, providing effective dispute resolution services to global users from different legal, cultural and linguistic backgrounds.'
+      },
+      {
+        name: 'American Arbitration Association (AAA)',
+        country: countries.find(c => c.code === 'US')._id,
+        region: 'North America',
+        officeLocations: ['US'],
+        recommendedSeats: ['New York', 'Washington D.C.', 'Miami', 'Houston'],
+        reputationScore: 9.0,
+        website: 'https://www.adr.org',
+        description: 'The largest dispute resolution provider in the United States, with a focus on commercial and construction disputes.'
+      },
+      {
+        name: 'Stockholm Chamber of Commerce (SCC)',
+        country: countries.find(c => c.code === 'SE')._id,
+        region: 'Europe',
+        officeLocations: ['SE'],
+        recommendedSeats: ['Stockholm', 'Geneva', 'London'],
+        reputationScore: 9.1,
+        website: 'https://sccinstitute.com',
+        description: 'A leading forum for dispute resolution between companies from Eastern and Western Europe, particularly known for handling East-West trade and investment disputes.'
+      },
+      {
+        name: 'Swiss Chambers\' Arbitration Institution (SCAI)',
+        country: countries.find(c => c.code === 'CH')._id,
+        region: 'Europe',
+        officeLocations: ['CH'],
+        recommendedSeats: ['Geneva', 'Zurich', 'Lugano', 'Basel'],
+        reputationScore: 9.4,
+        website: 'https://www.swissarbitration.org',
+        description: 'Provides dispute resolution services based on the Swiss Rules of International Arbitration, known for its neutrality and efficiency.'
+      }
+    ]);
+
+    // Create clauses
+    console.log('Adding model clauses...');
+    const clauses = await Clause.insertMany([
+      // ICC Arbitration Clause
+      {
+        title: 'ICC Standard Arbitration Clause',
+        text: 'All disputes arising out of or in connection with the present contract shall be finally settled under the Rules of Arbitration of the International Chamber of Commerce by one or more arbitrators appointed in accordance with the said Rules. The place of arbitration shall be [SEAT]. The language to be used in the arbitral proceedings shall be [LANGUAGE]. The governing law of this contract shall be the substantive law of [GOVERNING_LAW].',
+        type: 'arbitration',
+        institutionId: institutions.find(i => i.name === 'International Chamber of Commerce (ICC)')._id,
+        tags: ['international', 'commercial', 'standard']
+      },
+      // LCIA Arbitration Clause
+      {
+        title: 'LCIA Recommended Arbitration Clause',
+        text: 'Any dispute arising out of or in connection with this contract, including any question regarding its existence, validity or termination, shall be referred to and finally resolved by arbitration under the LCIA Rules, which Rules are deemed to be incorporated by reference into this clause. The number of arbitrators shall be [ARBITRATOR_COUNT]. The seat, or legal place, of arbitration shall be [SEAT]. The language to be used in the arbitral proceedings shall be [LANGUAGE]. The governing law of the contract shall be the substantive law of [GOVERNING_LAW].',
+        type: 'arbitration',
+        institutionId: institutions.find(i => i.name === 'London Court of International Arbitration (LCIA)')._id,
+        tags: ['international', 'commercial', 'standard']
+      },
+      // SIAC Arbitration Clause
+      {
+        title: 'SIAC Model Arbitration Clause',
+        text: 'Any dispute arising out of or in connection with this contract, including any question regarding its existence, validity or termination, shall be referred to and finally resolved by arbitration administered by the Singapore International Arbitration Centre (SIAC) in accordance with the Arbitration Rules of the Singapore International Arbitration Centre (SIAC Rules) for the time being in force, which rules are deemed to be incorporated by reference in this clause. The seat of the arbitration shall be [SEAT]. The Tribunal shall consist of [ARBITRATOR_COUNT] arbitrator(s). The language of the arbitration shall be [LANGUAGE]. The governing law of this contract shall be the substantive law of [GOVERNING_LAW].',
+        type: 'arbitration',
+        institutionId: institutions.find(i => i.name === 'Singapore International Arbitration Centre (SIAC)')._id,
+        tags: ['international', 'commercial', 'standard']
+      },
+      // HKIAC Arbitration Clause
+      {
+        title: 'HKIAC Model Arbitration Clause',
+        text: 'Any dispute, controversy, difference or claim arising out of or relating to this contract, including the existence, validity, interpretation, performance, breach or termination thereof or any dispute regarding non-contractual obligations arising out of or relating to it shall be referred to and finally resolved by arbitration administered by the Hong Kong International Arbitration Centre (HKIAC) under the HKIAC Administered Arbitration Rules in force when the Notice of Arbitration is submitted. The seat of arbitration shall be [SEAT]. The number of arbitrators shall be [ARBITRATOR_COUNT]. The arbitration proceedings shall be conducted in [LANGUAGE]. The law of this arbitration clause shall be [GOVERNING_LAW].',
+        type: 'arbitration',
+        institutionId: institutions.find(i => i.name === 'Hong Kong International Arbitration Centre (HKIAC)')._id,
+        tags: ['international', 'commercial', 'standard']
+      },
+      
+      // ICC Mediation Clause
+      {
+        title: 'ICC Standalone Mediation Clause',
+        text: 'In the event of any dispute arising out of or in connection with the present contract, the parties agree to submit the matter to mediation under the ICC Mediation Rules. The place of mediation shall be [SEAT]. The language to be used in the mediation shall be [LANGUAGE].',
+        type: 'mediation',
+        institutionId: institutions.find(i => i.name === 'International Chamber of Commerce (ICC)')._id,
+        tags: ['international', 'commercial', 'mediation']
+      },
+      // SIAC Mediation Clause
+      {
+        title: 'SIAC Mediation Clause',
+        text: 'In the event of a dispute arising out of or in connection with this contract, including any question regarding its existence, validity or termination, the parties shall seek to resolve the dispute by mediation in accordance with the SIAC Mediation Rules for the time being in force. The place of mediation shall be [SEAT]. The language to be used in the mediation shall be [LANGUAGE].',
+        type: 'mediation',
+        institutionId: institutions.find(i => i.name === 'Singapore International Arbitration Centre (SIAC)')._id,
+        tags: ['international', 'commercial', 'mediation']
+      },
+      
+      // ICC Multi-tiered Clause
+      {
+        title: 'ICC Combined Mediation and Arbitration Clause',
+        text: 'In the event of any dispute arising out of or in connection with the present contract, the parties shall first refer the dispute to proceedings under the ICC Mediation Rules. If the dispute has not been settled pursuant to the said Rules within [45] days following the filing of a Request for Mediation or within such other period as the parties may agree in writing, such dispute shall thereafter be finally settled under the Rules of Arbitration of the International Chamber of Commerce by one or more arbitrators appointed in accordance with the said Rules of Arbitration. The place of mediation and arbitration shall be [SEAT]. The language to be used in the mediation and arbitration shall be [LANGUAGE]. The governing law of this contract shall be the substantive law of [GOVERNING_LAW].',
+        type: 'multi-tiered',
+        institutionId: institutions.find(i => i.name === 'International Chamber of Commerce (ICC)')._id,
+        tags: ['international', 'commercial', 'multi-tiered', 'escalation']
+      },
+      // SIAC Multi-tiered Clause
+      {
+        title: 'SIAC Arb-Med-Arb Clause',
+        text: 'Any dispute arising out of or in connection with this contract, including any question regarding its existence, validity or termination, shall be referred to and finally resolved by arbitration administered by the Singapore International Arbitration Centre (SIAC) in accordance with the Arbitration Rules of the Singapore International Arbitration Centre (SIAC Rules) for the time being in force, which rules are deemed to be incorporated by reference in this clause. The seat of the arbitration shall be [SEAT]. The Tribunal shall consist of [ARBITRATOR_COUNT] arbitrator(s). The language of the arbitration shall be [LANGUAGE]. The parties further agree that following the commencement of arbitration, they will attempt in good faith to resolve the dispute through mediation at the Singapore International Mediation Centre (SIMC), in accordance with the SIAC-SIMC Arb-Med-Arb Protocol. Any settlement reached in the course of the mediation shall be referred to the arbitral tribunal appointed by SIAC and may be made a consent award on agreed terms.',
+        type: 'multi-tiered',
+        institutionId: institutions.find(i => i.name === 'Singapore International Arbitration Centre (SIAC)')._id,
+        tags: ['international', 'commercial', 'multi-tiered', 'arb-med-arb']
+      }
+    ]);
+
+    // Create admin user
+    console.log('Adding admin user...');
+    const hashedPassword = await bcrypt.hash('admin123', 10);
+    await User.create({
+      email: 'admin@draftresolve.com',
+      password: hashedPassword,
+      name: 'Admin User',
+      savedClauses: [
+        clauses[0]._id,
+        clauses[2]._id
+      ]
+    });
+
+    console.log('Database seeded successfully!');
+    process.exit(0);
+  } catch (error) {
+    console.error('Error seeding database:', error);
+    process.exit(1);
+  }
+};
+
+// Run the seed function
+seedDatabase();
