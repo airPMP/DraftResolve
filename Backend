@@ -1,0 +1,381 @@
+// Server.js - Express backend for DraftResolve
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+const { body, validationResult } = require('express-validator');
+
+// Import models
+const User = require('./models/User');
+const Clause = require('./models/Clause');
+const Institution = require('./models/Institution');
+const Country = require('./models/Country');
+
+const app = express();
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Authentication middleware
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  
+  if (!token) return res.status(401).json({ message: 'Authentication required' });
+  
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ message: 'Invalid or expired token' });
+    req.user = user;
+    next();
+  });
+};
+
+// Routes
+
+// Authentication
+app.post('/api/auth/signup', [
+  body('email').isEmail().withMessage('Valid email required'),
+  body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters')
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  
+  try {
+    const { email, password, name } = req.body;
+    
+    // Check if user exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(409).json({ message: 'User already exists' });
+    }
+    
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    // Create user
+    const user = new User({
+      email,
+      password: hashedPassword,
+      name
+    });
+    
+    await user.save();
+    
+    // Generate token
+    const token = jwt.sign(
+      { userId: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+    
+    res.status(201).json({
+      message: 'User created successfully',
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    // Find user
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+    
+    // Check password
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+    
+    // Generate token
+    const token = jwt.sign(
+      { userId: user._id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+    
+    res.status(200).json({
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Institution suggestion endpoint
+app.post('/api/institutions/suggest', async (req, res) => {
+  try {
+    const { 
+      partyANationality, 
+      partyBNationality, 
+      subjectMatterLocation, 
+      enforcementLocations 
+    } = req.body;
+    
+    // Get country information
+    const partyACountry = await Country.findOne({ code: partyANationality });
+    const partyBCountry = await Country.findOne({ code: partyBNationality });
+    const enforcementCountry = await Country.findOne({ code: enforcementLocations });
+    
+    if (!partyACountry || !partyBCountry || !enforcementCountry) {
+      return res.status(400).json({ message: 'Invalid country code(s)' });
+    }
+    
+    // Logic to find neutral jurisdictions
+    const isNeutral = (institution) => {
+      return institution.country.code !== partyANationality && 
+             institution.country.code !== partyBNationality;
+    };
+    
+    // Logic to check New York Convention compatibility
+    const isEnforceable = (institution) => {
+      // Check if both the institution's country and enforcement country are NYC signatories
+      return institution.country.nyConvention && enforcementCountry.nyConvention;
+    };
+    
+    // Get all institutions
+    let institutions = await Institution.find().populate('country');
+    
+    // Filter by neutrality and enforceability
+    institutions = institutions.filter(institution => 
+      isNeutral(institution) && isEnforceable(institution)
+    );
+    
+    // Sort by reputation and compatibility with enforcement location
+    institutions.sort((a, b) => {
+      // Prioritize institutions with higher reputation scores
+      if (a.reputationScore !== b.reputationScore) {
+        return b.reputationScore - a.reputationScore;
+      }
+      
+      // If reputation is the same, prioritize institutions that have offices in the enforcement country
+      const aHasOffice = a.officeLocations.includes(enforcementLocations);
+      const bHasOffice = b.officeLocations.includes(enforcementLocations);
+      
+      if (aHasOffice && !bHasOffice) return -1;
+      if (!aHasOffice && bHasOffice) return 1;
+      
+      return 0;
+    });
+    
+    // Return top 5 suggestions
+    const suggestions = institutions.slice(0, 5).map(institution => ({
+      id: institution._id,
+      name: institution.name,
+      country: institution.country.name,
+      recommendedSeat: institution.recommendedSeats[0] || institution.country.capital,
+      reputationScore: institution.reputationScore
+    }));
+    
+    res.status(200).json({ institutions: suggestions });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Clause generation endpoint
+app.post('/api/clauses/generate', async (req, res) => {
+  try {
+    const {
+      clauseType,
+      partyANationality,
+      partyBNationality,
+      subjectMatterLocation,
+      enforcementLocations,
+      seatOfArbitration,
+      governingLaw,
+      language,
+      arbitratorCount,
+      institution
+    } = req.body;
+    
+    // Get institution
+    const selectedInstitution = await Institution.findById(institution);
+    if (!selectedInstitution) {
+      return res.status(400).json({ message: 'Invalid institution' });
+    }
+    
+    // Find relevant model clauses
+    const baseClauses = await Clause.find({
+      institutionId: institution,
+      type: clauseType
+    });
+    
+    if (baseClauses.length === 0) {
+      return res.status(404).json({ message: 'No matching clauses found' });
+    }
+    
+    // Generate customized clauses
+    const generatedClauses = baseClauses.map(clause => {
+      let customizedText = clause.text;
+      
+      // Replace placeholders with user selections
+      customizedText = customizedText
+        .replace(/\[SEAT\]/g, seatOfArbitration)
+        .replace(/\[GOVERNING_LAW\]/g, governingLaw)
+        .replace(/\[LANGUAGE\]/g, language)
+        .replace(/\[ARBITRATOR_COUNT\]/g, arbitratorCount);
+      
+      return {
+        id: clause._id,
+        text: customizedText,
+        institution: selectedInstitution.name,
+        type: clause.type,
+        tags: clause.tags
+      };
+    });
+    
+    res.status(200).json({ clauses: generatedClauses });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Download clause endpoint
+app.get('/api/clauses/:id/download', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { format } = req.query;
+    
+    if (!['docx', 'pdf'].includes(format)) {
+      return res.status(400).json({ message: 'Invalid format. Use docx or pdf.' });
+    }
+    
+    const clause = await Clause.findById(id);
+    if (!clause) {
+      return res.status(404).json({ message: 'Clause not found' });
+    }
+    
+    // Logic to generate document in requested format
+    // This would typically use a library like docx for Word files
+    // and PDFKit for PDF files
+    
+    // For simplicity, let's just send a placeholder response
+    res.setHeader('Content-Type', format === 'docx' ? 
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : 
+      'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="clause-${id}.${format}"`);
+    
+    // In a real implementation, we would stream the generated file here
+    res.send('Document content would be here');
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Save clause endpoint (requires authentication)
+app.post('/api/clauses/:id/save', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+    
+    const clause = await Clause.findById(id);
+    if (!clause) {
+      return res.status(404).json({ message: 'Clause not found' });
+    }
+    
+    // Add clause to user's saved clauses
+    const user = await User.findById(userId);
+    if (!user.savedClauses.includes(id)) {
+      user.savedClauses.push(id);
+      await user.save();
+    }
+    
+    res.status(200).json({ message: 'Clause saved successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Get clause library
+app.get('/api/clauses/library', async (req, res) => {
+  try {
+    const { institution, region, type } = req.query;
+    
+    // Build filter
+    const filter = {};
+    if (institution) filter.institutionId = institution;
+    if (type) filter.type = type;
+    
+    let clauses = await Clause.find(filter)
+      .populate('institutionId');
+    
+    // Apply region filter if specified
+    if (region) {
+      const institutions = await Institution.find({ region });
+      const institutionIds = institutions.map(inst => inst._id.toString());
+      
+      clauses = clauses.filter(clause => 
+        institutionIds.includes(clause.institutionId._id.toString())
+      );
+    }
+    
+    const formattedClauses = clauses.map(clause => ({
+      id: clause._id,
+      title: clause.title,
+      text: clause.text,
+      institution: clause.institutionId.name,
+      type: clause.type,
+      tags: clause.tags
+    }));
+    
+    res.status(200).json({ clauses: formattedClauses });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Get user's saved clauses
+app.get('/api/user/clauses', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    
+    const user = await User.findById(userId)
+      .populate({
+        path: 'savedClauses',
+        populate: { path: 'institutionId' }
+      });
+    
+    const savedClauses = user.savedClauses.map(clause => ({
+      id: clause._id,
+      title: clause.title,
+      text: clause.text,
+      institution: clause.institutionId.name,
+      type: clause.type,
+      tags: clause.tags,
+      savedAt: clause.savedAt
+    }));
+    
+    res.status(200).json({ clauses: savedClauses });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Start server
+const PORT = process.env.PORT || 5000;
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => {
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  })
+  .catch(err => console.error('MongoDB connection error:', err));
