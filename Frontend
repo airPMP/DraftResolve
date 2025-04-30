@@ -1,0 +1,717 @@
+// LandingPage.jsx
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { ArrowRight, Shield, Globe, BookOpen } from 'lucide-react';
+
+const LandingPage = () => {
+  return (
+    <div className="flex flex-col min-h-screen">
+      {/* Hero Section */}
+      <section className="bg-gradient-to-r from-blue-900 to-indigo-800 text-white py-20">
+        <div className="container mx-auto px-6">
+          <div className="max-w-3xl mx-auto text-center">
+            <h1 className="text-4xl md:text-5xl font-bold mb-6">
+              Craft Custom Dispute Resolution Clauses.
+              <span className="block mt-2">Globally Compliant. Instantly.</span>
+            </h1>
+            <p className="text-xl mb-8">
+              Generate tailored arbitration, mediation, and multi-tiered clauses in minutes.
+              Trusted by legal professionals worldwide.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                to="/clause-builder"
+                className="bg-white text-blue-900 font-semibold px-6 py-3 rounded-lg flex items-center justify-center hover:bg-blue-50 transition"
+              >
+                Start Building a Clause <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+              <Link
+                to="/clause-library"
+                className="bg-transparent border-2 border-white text-white font-semibold px-6 py-3 rounded-lg flex items-center justify-center hover:bg-white/10 transition"
+              >
+                Browse Clauses <BookOpen className="ml-2 h-5 w-5" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-gray-900">Why Legal Professionals Choose DraftResolve</h2>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="bg-white p-8 rounded-xl shadow-md">
+              <div className="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                <Globe className="h-6 w-6 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">100+ Model Clauses</h3>
+              <p className="text-gray-600">
+                Access our extensive library of model clauses from leading arbitration institutions worldwide.
+              </p>
+            </div>
+            
+            <div className="bg-white p-8 rounded-xl shadow-md">
+              <div className="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                <Shield className="h-6 w-6 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">Enforceability Analysis</h3>
+              <p className="text-gray-600">
+                Intelligent suggestions based on New York Convention compatibility and enforcement location.
+              </p>
+            </div>
+            
+            <div className="bg-white p-8 rounded-xl shadow-md">
+              <div className="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mb-4">
+                <BookOpen className="h-6 w-6 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">Tailored Clauses</h3>
+              <p className="text-gray-600">
+                Generate customized clauses instantly based on your specific requirements and preferences.
+              </p>
+            </div>
+          </div>
+          
+          <div className="text-center mt-12">
+            <p className="text-gray-700 text-lg mb-6">
+              Join thousands of legal professionals saving time on contract drafting
+            </p>
+            <Link
+              to="/signup"
+              className="bg-blue-900 text-white font-semibold px-6 py-3 rounded-lg hover:bg-blue-800 transition"
+            >
+              Create Free Account
+            </Link>
+          </div>
+        </div>
+      </section>
+      
+      {/* Footer */}
+      <footer className="bg-gray-800 text-white py-12 mt-auto">
+        <div className="container mx-auto px-6">
+          <div className="grid md:grid-cols-4 gap-8">
+            <div>
+              <h3 className="text-lg font-bold mb-4">DraftResolve</h3>
+              <p className="text-gray-400">
+                Streamlining dispute resolution clause drafting for legal professionals worldwide.
+              </p>
+            </div>
+            
+            <div>
+              <h3 className="text-lg font-bold mb-4">Product</h3>
+              <ul className="space-y-2">
+                <li><Link to="/clause-builder" className="text-gray-400 hover:text-white">Clause Builder</Link></li>
+                <li><Link to="/clause-library" className="text-gray-400 hover:text-white">Clause Library</Link></li>
+                <li><Link to="/pricing" className="text-gray-400 hover:text-white">Pricing</Link></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h3 className="text-lg font-bold mb-4">Company</h3>
+              <ul className="space-y-2">
+                <li><Link to="/about" className="text-gray-400 hover:text-white">About</Link></li>
+                <li><Link to="/contact" className="text-gray-400 hover:text-white">Contact</Link></li>
+                <li><Link to="/blog" className="text-gray-400 hover:text-white">Blog</Link></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h3 className="text-lg font-bold mb-4">Legal</h3>
+              <ul className="space-y-2">
+                <li><Link to="/terms" className="text-gray-400 hover:text-white">Terms of Service</Link></li>
+                <li><Link to="/privacy" className="text-gray-400 hover:text-white">Privacy Policy</Link></li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="border-t border-gray-700 mt-8 pt-8 text-center">
+            <p className="text-gray-400">© {new Date().getFullYear()} DraftResolve. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default LandingPage;
+
+// ClauseBuilder.jsx
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { 
+  Download, Copy, Save, Info, AlertCircle, ArrowRight, ArrowLeft, Check 
+} from 'lucide-react';
+import { Tooltip } from '@/components/ui/tooltip';
+
+const ClauseBuilder = () => {
+  const navigate = useNavigate();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [formData, setFormData] = useState({
+    clauseType: 'arbitration',
+    partyANationality: '',
+    partyBNationality: '',
+    subjectMatterLocation: '',
+    enforcementLocations: '',
+    seatOfArbitration: '',
+    governingLaw: '',
+    language: 'English',
+    arbitratorCount: '3',
+    institution: ''
+  });
+  
+  const [suggestedInstitutions, setSuggestedInstitutions] = useState([]);
+  const [generatedClauses, setGeneratedClauses] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+  
+  // Step information
+  const steps = [
+    { id: 1, name: 'Clause Type' },
+    { id: 2, name: 'Party Information' },
+    { id: 3, name: 'Dispute Details' },
+    { id: 4, name: 'Results' }
+  ];
+
+  useEffect(() => {
+    // Only fetch institution suggestions when we have the necessary data
+    if (formData.partyANationality && 
+        formData.partyBNationality && 
+        formData.subjectMatterLocation && 
+        formData.enforcementLocations) {
+      
+      fetchSuggestedInstitutions();
+    }
+  }, [formData.partyANationality, formData.partyBNationality, 
+      formData.subjectMatterLocation, formData.enforcementLocations]);
+
+  const fetchSuggestedInstitutions = async () => {
+    try {
+      const response = await fetch('/api/institutions/suggest', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          partyANationality: formData.partyANationality,
+          partyBNationality: formData.partyBNationality,
+          subjectMatterLocation: formData.subjectMatterLocation,
+          enforcementLocations: formData.enforcementLocations
+        }),
+      });
+      
+      const data = await response.json();
+      setSuggestedInstitutions(data.institutions);
+      
+      // Auto-select the first suggestion
+      if (data.institutions && data.institutions.length > 0) {
+        setFormData(prev => ({
+          ...prev,
+          institution: data.institutions[0].id,
+          seatOfArbitration: data.institutions[0].recommendedSeat
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching suggested institutions:', error);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleNextStep = () => {
+    setCurrentStep(prev => Math.min(prev + 1, steps.length));
+  };
+
+  const handlePrevStep = () => {
+    setCurrentStep(prev => Math.max(prev - 1, 1));
+  };
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    
+    try {
+      const response = await fetch('/api/clauses/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      
+      const data = await response.json();
+      setGeneratedClauses(data.clauses);
+      setCurrentStep(4); // Move to results step
+    } catch (error) {
+      console.error('Error generating clauses:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const handleCopyClause = (clauseText) => {
+    navigator.clipboard.writeText(clauseText);
+    // Show a toast notification
+  };
+  
+  const handleDownloadClause = async (clauseId, format) => {
+    try {
+      const response = await fetch(`/api/clauses/${clauseId}/download?format=${format}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `clause-${clauseId}.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch (error) {
+      console.error('Error downloading clause:', error);
+    }
+  };
+  
+  const handleSaveClause = async (clauseId) => {
+    try {
+      await fetch(`/api/clauses/${clauseId}/save`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      // Show success notification
+    } catch (error) {
+      console.error('Error saving clause:', error);
+    }
+  };
+
+  // Render steps content based on current step
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold">Select Clause Type</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div 
+                className={`p-6 border rounded-lg cursor-pointer transition 
+                  ${formData.clauseType === 'arbitration' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'}`}
+                onClick={() => setFormData(prev => ({ ...prev, clauseType: 'arbitration' }))}
+              >
+                <h3 className="font-semibold text-lg mb-2">Arbitration</h3>
+                <p className="text-gray-600 text-sm">
+                  Private dispute resolution with binding decision by neutral third party.
+                </p>
+              </div>
+              
+              <div 
+                className={`p-6 border rounded-lg cursor-pointer transition 
+                  ${formData.clauseType === 'mediation' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'}`}
+                onClick={() => setFormData(prev => ({ ...prev, clauseType: 'mediation' }))}
+              >
+                <h3 className="font-semibold text-lg mb-2">Mediation</h3>
+                <p className="text-gray-600 text-sm">
+                  Structured negotiation with neutral facilitator to reach voluntary agreement.
+                </p>
+              </div>
+              
+              <div 
+                className={`p-6 border rounded-lg cursor-pointer transition 
+                  ${formData.clauseType === 'multi-tiered' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'}`}
+                onClick={() => setFormData(prev => ({ ...prev, clauseType: 'multi-tiered' }))}
+              >
+                <h3 className="font-semibold text-lg mb-2">Multi-tiered</h3>
+                <p className="text-gray-600 text-sm">
+                  Sequential process, typically negotiation → mediation → arbitration.
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+        
+      case 2:
+        return (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold">Party Information</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Party A Nationality
+                </label>
+                <select
+                  name="partyANationality"
+                  value={formData.partyANationality}
+                  onChange={handleInputChange}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                  required
+                >
+                  <option value="">Select country</option>
+                  <option value="US">United States</option>
+                  <option value="UK">United Kingdom</option>
+                  <option value="DE">Germany</option>
+                  <option value="FR">France</option>
+                  <option value="CN">China</option>
+                  <option value="JP">Japan</option>
+                  {/* Additional countries would be added here */}
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Party B Nationality
+                </label>
+                <select
+                  name="partyBNationality"
+                  value={formData.partyBNationality}
+                  onChange={handleInputChange}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                  required
+                >
+                  <option value="">Select country</option>
+                  <option value="US">United States</option>
+                  <option value="UK">United Kingdom</option>
+                  <option value="DE">Germany</option>
+                  <option value="FR">France</option>
+                  <option value="CN">China</option>
+                  <option value="JP">Japan</option>
+                  {/* Additional countries would be added here */}
+                </select>
+              </div>
+            </div>
+          </div>
+        );
+        
+      case 3:
+        return (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold">Dispute Details</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Location of Subject Matter
+                </label>
+                <select
+                  name="subjectMatterLocation"
+                  value={formData.subjectMatterLocation}
+                  onChange={handleInputChange}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                  required
+                >
+                  <option value="">Select country</option>
+                  <option value="US">United States</option>
+                  <option value="UK">United Kingdom</option>
+                  <option value="DE">Germany</option>
+                  <option value="FR">France</option>
+                  <option value="CN">China</option>
+                  <option value="JP">Japan</option>
+                  {/* Additional countries would be added here */}
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Enforcement Location(s)
+                </label>
+                <select
+                  name="enforcementLocations"
+                  value={formData.enforcementLocations}
+                  onChange={handleInputChange}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                  required
+                >
+                  <option value="">Select country</option>
+                  <option value="US">United States</option>
+                  <option value="UK">United Kingdom</option>
+                  <option value="DE">Germany</option>
+                  <option value="FR">France</option>
+                  <option value="CN">China</option>
+                  <option value="JP">Japan</option>
+                  {/* Additional countries would be added here */}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Suggested Institution
+                  <div className="inline-block ml-2 relative">
+                    <Info 
+                      className="h-4 w-4 text-gray-500 cursor-help inline"
+                      onMouseEnter={() => setShowTooltip(true)}
+                      onMouseLeave={() => setShowTooltip(false)}
+                    />
+                    {showTooltip && (
+                      <div className="absolute z-10 w-64 p-3 bg-gray-800 text-white text-xs rounded shadow-lg -right-2 top-6">
+                        This institution is suggested based on neutrality, New York Convention compatibility, and optimal enforcement in your selected locations.
+                      </div>
+                    )}
+                  </div>
+                </label>
+                <select
+                  name="institution"
+                  value={formData.institution}
+                  onChange={handleInputChange}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                  required
+                >
+                  <option value="">Select institution</option>
+                  {suggestedInstitutions.map(institution => (
+                    <option key={institution.id} value={institution.id}>
+                      {institution.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Seat of Arbitration
+                </label>
+                <select
+                  name="seatOfArbitration"
+                  value={formData.seatOfArbitration}
+                  onChange={handleInputChange}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                  required
+                >
+                  <option value="">Select seat</option>
+                  <option value="London">London</option>
+                  <option value="Singapore">Singapore</option>
+                  <option value="Paris">Paris</option>
+                  <option value="Geneva">Geneva</option>
+                  <option value="New York">New York</option>
+                  <option value="Hong Kong">Hong Kong</option>
+                  {/* Additional seats would be added here */}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Governing Law
+                </label>
+                <select
+                  name="governingLaw"
+                  value={formData.governingLaw}
+                  onChange={handleInputChange}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                  required
+                >
+                  <option value="">Select law</option>
+                  <option value="English">English Law</option>
+                  <option value="New York">New York Law</option>
+                  <option value="Singapore">Singapore Law</option>
+                  <option value="Swiss">Swiss Law</option>
+                  <option value="French">French Law</option>
+                  {/* Additional laws would be added here */}
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Language
+                </label>
+                <select
+                  name="language"
+                  value={formData.language}
+                  onChange={handleInputChange}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                  required
+                >
+                  <option value="English">English</option>
+                  <option value="French">French</option>
+                  <option value="German">German</option>
+                  <option value="Spanish">Spanish</option>
+                  <option value="Chinese">Chinese</option>
+                  {/* Additional languages would be added here */}
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Number of Arbitrators
+                </label>
+                <select
+                  name="arbitratorCount"
+                  value={formData.arbitratorCount}
+                  onChange={handleInputChange}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                  required
+                >
+                  <option value="1">1 (Sole arbitrator)</option>
+                  <option value="3">3 (Tribunal)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        );
+        
+      case 4:
+        return (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold">Generated Clauses</h2>
+            
+            {loading ? (
+              <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700"></div>
+              </div>
+            ) : (
+              <div className="space-y-8">
+                {generatedClauses.map((clause, index) => (
+                  <div key={index} className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-semibold">Option {index + 1}</h3>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleCopyClause(clause.text)}
+                          className="p-2 text-gray-600 hover:text-blue-600 rounded-full hover:bg-blue-50 transition"
+                          title="Copy to clipboard"
+                        >
+                          <Copy className="h-5 w-5" />
+                        </button>
+                        <div className="relative group">
+                          <button
+                            className="p-2 text-gray-600 hover:text-blue-600 rounded-full hover:bg-blue-50 transition"
+                            title="Download"
+                          >
+                            <Download className="h-5 w-5" />
+                          </button>
+                          <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden group-hover:block z-10">
+                            <div className="py-1">
+                              <button 
+                                onClick={() => handleDownloadClause(clause.id, 'docx')}
+                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                              >
+                                Download as DOCX
+                              </button>
+                              <button 
+                                onClick={() => handleDownloadClause(clause.id, 'pdf')}
+                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                              >
+                                Download as PDF
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleSaveClause(clause.id)}
+                          className="p-2 text-gray-600 hover:text-blue-600 rounded-full hover:bg-blue-50 transition"
+                          title="Save to library"
+                        >
+                          <Save className="h-5 w-5" />
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <div className="prose max-w-full">
+                      <pre className="bg-gray-50 p-4 rounded-md text-sm whitespace-pre-wrap">
+                        {clause.text}
+                      </pre>
+                    </div>
+                    
+                    <div className="mt-4 text-sm text-gray-500">
+                      Source: {clause.institution}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            <div className="flex justify-between mt-8">
+              <button
+                onClick={() => navigate('/clause-library')}
+                className="text-blue-600 hover:text-blue-800 font-medium flex items-center"
+              >
+                <BookOpen className="mr-2 h-5 w-5" /> Browse Clause Library
+              </button>
+              
+              <button
+                onClick={() => setCurrentStep(1)}
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition flex items-center"
+              >
+                Create New Clause <ArrowRight className="ml-2 h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        );
+        
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="bg-gray-50 min-h-screen pb-12">
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        {/* Progress Steps */}
+        <div className="mb-12">
+          <div className="flex items-center justify-between md:w-2/3 mx-auto">
+            {steps.map((step, i) => (
+              <React.Fragment key={step.id}>
+                {i > 0 && (
+                  <div 
+                    className={`flex-1 h-1 ${
+                      currentStep > i ? 'bg-blue-600' : 'bg-gray-300'
+                    }`}
+                  ></div>
+                )}
+                <div className="relative flex flex-col items-center">
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
+                      currentStep >= step.id
+                        ? 'border-blue-600 bg-blue-600 text-white'
+                        : 'border-gray-300 bg-white text-gray-500'
+                    }`}
+                  >
+                    {currentStep > step.id ? (
+                      <Check className="h-6 w-6" />
+                    ) : (
+                      step.id
+                    )}
+                  </div>
+                  <div className="mt-2 text-sm font-medium text-gray-500 hidden md:block">
+                    {step.name}
+                  </div>
+                </div>
+              </React.Fragment>
+            ))}
+          </div>
+        </div>
+        
+        {/* Form Content */}
+        <div className="bg-white shadow-md rounded-lg p-8">
+          {renderStepContent()}
+          
+          {/* Navigation Buttons */}
+          {currentStep < 4 && (
+            <div className="flex justify-between mt-12">
+              <button
+                onClick={handlePrevStep}
+                disabled={currentStep === 1}
+                className={`flex items-center ${
+                  currentStep === 1
+                    ? 'text-gray-400 cursor-not-allowed'
+                    : 'text-blue-600 hover:text-blue-800'
+                }`}
+              >
+                <ArrowLeft className="mr-2 h-5 w-5" /> Previous
+              </button>
+              
+              {currentStep < 3 ? (
+                <button
